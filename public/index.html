@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MediVerse</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Top Header: Logo centered, welcome once, logout + profile icon on right -->
+<header class="topbar">
+  <div class="topbar-center">
+    <div class="logo">MediVerse</div>
+    <div id="welcomeText" class="welcome-inline">Welcome</div>
+  </div>
+
+  <div class="topbar-left">
+  
+    <input id="profileToggle" class="profile-toggle" type="checkbox" />
+    <label for="profileToggle" class="profile-btn" title="Profile">👤</label>
+    <div class="profile-modal" aria-hidden="true">
+      <h4>Profile</h4>
+      <div><strong>Name:</strong> <span id="profileName">-</span></div>
+      <div><strong>Email:</strong> <span id="profileEmail">-</span></div>
+      <div><strong>Phone:</strong> <span id="profilePhone">-</span></div>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end">
+        <button id="profileLogout" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <button class="emergency-top" onclick="handleEmergency()" title="Emergency">🚨 Emergency</button>
+  </div>
+</header>
+
+<!-- USER TYPE SELECTION & AUTH (unchanged behavior, structure preserved) -->
+<div id="userSelection" class="card">
+  <h3>Are you a Patient or Doctor?</h3>
+  <button onclick="selectUserType('patient')">Patient</button>
+  <button onclick="selectUserType('doctor')">Doctor</button>
+</div>
+
+<div id="auth" class="hidden">
+  <div id="patientRegister" class="card hidden">
+    <h3>Patient Register</h3>
+    <input id="pname" placeholder="Name">
+    <input id="page" placeholder="Age">
+    <input id="pphone" placeholder="Phone Number">
+    <input id="paddress" placeholder="Address">
+    <input id="puser" placeholder="Username">
+    <input id="ppass" type="password" placeholder="Password">
+    <button onclick="registerPatient()">Register</button>
+    <p><button class="link-btn" onclick="switchToPatientLogin()">Already registered? Login here</button></p>
+  </div>
+
+  <div id="doctorRegister" class="card hidden">
+    <h3>Doctor Register</h3>
+    <input id="dname" placeholder="Doctor Name">
+    <input id="dphone" placeholder="Phone Number">
+    <input id="did" placeholder="Doctor ID">
+    <input id="dpass" type="password" placeholder="Password">
+    <button onclick="registerDoctor()">Register</button>
+    <p><button class="link-btn" onclick="switchToDoctorLogin()">Already registered? Login here</button></p>
+  </div>
+
+  <div id="patientLogin" class="card hidden">
+    <h3>Patient Login</h3>
+    <input id="lpuser" placeholder="Username">
+    <input id="lppass" type="password" placeholder="Password">
+    <button onclick="loginPatient()">Login</button>
+    <p><button onclick="backToSelection()">Back</button></p>
+  </div>
+
+  <div id="doctorLogin" class="card hidden">
+    <h3>Doctor Login</h3>
+    <input id="ldid" placeholder="Doctor ID">
+    <input id="ldpass" type="password" placeholder="Password">
+    <button onclick="loginDoctor()">Login</button>
+    <p><button onclick="backToSelection()">Back</button></p>
+  </div>
+</div>
+
+<!-- PATIENT DASHBOARD -->
+<div id="patientDash" class="hidden">
+  <!-- keep hidden title/user elements for existing JS references (visually hidden) -->
+  <h2 id="patientTitle" class="visually-hidden"></h2>
+  <div id="patientUser" class="visually-hidden"></div>
+
+  <div class="main-grid">
+    <!-- Row 1: Medicine (left) and Appointments (right) -->
+    <div class="card medicine-card">
+      <h3>Medicine Reminder</h3>
+      <div class="medicine-actions">
+        <button onclick="takeMed('Morning')">Morning</button>
+        <button onclick="takeMed('Afternoon')">Afternoon</button>
+        <button onclick="takeMed('Night')">Night</button>
+      </div>
+      <p id="streakText" class="streak-text"></p>
+      <button class="secondary" onclick="showStreakCalendar()">Show Streak Calendar</button>
+
+      <div id="streakCalendar" class="hidden">
+        <h4>Streak Calendar</h4>
+        <div id="calendar"></div>
+      </div>
+    </div>
+
+    <div class="card appointments-card">
+      <h3>Appointments</h3>
+      <div id="appointmentsList">
+        <p class="muted">No appointments yet</p>
+      </div>
+    </div>
+
+    <!-- Row 2: Book Doctor (left) -->
+    <div class="card book-card">
+      <h3>Book Doctor</h3>
+      <select id="hospitalSelect">
+        <option value="">Select Hospital</option>
+        <option value="Apollo">Apollo Hospital</option>
+        <option value="Max">Max Healthcare</option>
+        <option value="Fortis">Fortis Hospital</option>
+      </select>
+      <button onclick="showHospitalSpecialties()">Choose Doctor</button>
+    </div>
+
+    <!-- Family Members (right, beside Book Doctor) -->
+    <div class="card family-card">
+      <h3>Family Members</h3>
+      <input id="familyInput" placeholder="Name">
+      <input id="familyPhone" placeholder="Contact Number">
+      <div style="display:flex; gap:8px; justify-content:center">
+        <button onclick="addFamily()">Add</button>
+        <button onclick="showFamilyDetails()" id="showFamilyBtn" class="hidden">Show Family Details</button>
+      </div>
+      <div id="familyDetails" class="hidden" style="margin-top:12px">
+        <h4>Family Members List</h4>
+        <ul id="familyList"></ul>
+      </div>
+    </div>
+    
+    <!-- Medical Records (full width below Book/Family) -->
+    <div class="card records-card full-width" id="recordsCard">
+      <h3>Medical Records</h3>
+      <div id="recordsList">
+        <p class="muted">No records available</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden containers required by JS but removable from main flow (kept available) -->
+<div id="hiddenContainers">
+  <div id="specialties" class="hidden card">
+    <h4>Choose Specialty</h4>
+    <div id="specialtyGrid" class="specialty-grid"></div>
+  </div>
+
+  <div id="doctorsList" class="hidden card">
+    <h4 id="doctorsTitle">Available Doctors</h4>
+    <div id="doctorsContainer"></div>
+  </div>
+
+
+  <!-- Appointment section remains available to JS but hidden by default -->
+  <div id="appointmentSection" class="hidden card">
+    <h3 id="appointHeading">Book Appointment</h3>
+    <div><strong>Doctor:</strong> <span id="appointDoctor"></span></div>
+    <div><strong>Hospital:</strong> <span id="appointHospital"></span></div>
+
+    <div style="margin-top:12px">
+      <label><strong>Select Date</strong></label>
+      <div id="appointDates" style="display:flex; margin-top:8px; overflow:auto"></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <label><strong>Select Time</strong></label>
+      <div id="appointTimes" class="slots-grid"></div>
+    </div>
+
+    <div style="margin-top:18px">
+      <button id="confirmAppointment">Book Appointment</button>
+      <button id="cancelAppointment" style="margin-left:8px; background:#ddd; color:#111">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Emergency floating button removed (topbar has emergency) -->
+
+<!-- AI Agent floating button + panel -->
+<!-- AI assistant removed -->
+
+<!-- DOCTOR DASHBOARD -->
+<div id="doctorDash" class="hidden">
+  <h2 id="doctorTitle"></h2>
+
+  <div class="card">
+    <h3>Search Patient</h3>
+    <input id="searchUser" placeholder="Patient Username">
+    <button onclick="searchPatient()">Search</button>
+  </div>
+
+  <div class="card" id="patientResult"></div>
+</div>
+
+<!-- APPOINTMENT SECTION (embedded) -->
+<!-- Note: appointmentSection available above inside hiddenContainers to avoid duplicates -->
+
+<script src="script.js"></script>
+</body>
+</html>
