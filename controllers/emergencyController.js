@@ -21,19 +21,21 @@ exports.triggerEmergency = async (req, res) => {
         // IMMEDIATELY return success response as requested
         return res.status(200).json({
             success: true,
-            message: "Emergency request logged and ambulance dispatched.",
-            requestId: request.id,
-            ambulance: {
-                driver_name: "Rahul Sharma",
-                vehicle_number: "KA-01-EA-1234",
-                phone: "+91-9876543210",
-                eta: eta,
-                tracking_url: `https://maps.google.com/?q=${location.lat},${location.lng}`
-            },
-            hospital: {
-                id: 101,
-                name: hospitalName,
-                location: "4.2 km away"
+            data: {
+                message: "Emergency request logged and ambulance dispatched.",
+                requestId: request.id,
+                ambulance: {
+                    driver_name: "Rahul Sharma",
+                    vehicle_number: "KA-01-EA-1234",
+                    phone: "+91-9876543210",
+                    eta: eta,
+                    tracking_url: `https://maps.google.com/?q=${location.lat},${location.lng}`
+                },
+                hospital: {
+                    id: 101,
+                    name: hospitalName,
+                    location: "4.2 km away"
+                }
             }
         });
 
