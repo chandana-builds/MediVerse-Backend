@@ -6,19 +6,38 @@ exports.triggerEmergency = async (req, res) => {
 
         console.log(`[EMERGENCY] Triggered by Patient: ${userId} at`, location);
 
+        // 1. Input Validation
+        if (!userId) {
+            return res.status(400).json({ success: false, message: "Missing userId." });
+        }
+        if (!location || !location.lat || !location.lng) {
+            return res.status(400).json({ success: false, message: "Invalid location data." });
+        }
+
         const hospitalName = "City General Hospital";
         const eta = "12 mins";
 
-        const request = await EmergencyRequest.create({
-            patientId: userId, // Updated to match new model/table column
-            latitude: location.lat,
-            longitude: location.lng,
-            assigned_hospital: hospitalName,
-            eta: eta,
-            status: 'dispatched'
-        });
+        // 2. Database Creation
+        let request;
+        try {
+            request = await EmergencyRequest.create({
+                patientId: userId,
+                latitude: location.lat,
+                longitude: location.lng,
+                assigned_hospital: hospitalName,
+                eta: eta,
+                status: 'dispatched'
+            });
+        } catch (dbError) {
+            console.error("Database Write Error:", dbError);
+            // If the table is missing or columns are wrong, we might get here.
+            // For MVP/Backup, we can return success with a mock ID if DB fails,
+            // BUT since user asked for persistence, we should probably return the error
+            // so they know to fix the DB.
+            throw new Error(`Database Error: ${dbError.message}`);
+        }
 
-        // IMMEDIATELY return success response as requested
+        // 3. Success Response
         return res.status(200).json({
             success: true,
             data: {
@@ -41,9 +60,12 @@ exports.triggerEmergency = async (req, res) => {
 
     } catch (error) {
         console.error("Emergency Trigger Error:", error);
-        // Ensure headers aren't already sent
         if (!res.headersSent) {
-            return res.status(500).json({ success: false, message: "Failed to process emergency request." });
+            return res.status(500).json({
+                success: false,
+                message: "Failed to process emergency request.",
+                error_details: error.message // Return specific error for debugging
+            });
         }
     }
 };

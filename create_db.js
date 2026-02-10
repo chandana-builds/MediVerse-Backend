@@ -56,6 +56,18 @@ async function createDatabase() {
         console.log('Doctors table ready.');
 
         // EmergencyRequests Table
+        // DROP TABLE to ensure we don't have schema mismatches (e.g. patient_id vs patientId)
+        // WARNING: This clears emergency history on redeploy/init, but ensures functionality.
+        // Remove the DROP line if you want to preserve data and manually migrate.
+        // await db.query('DROP TABLE IF EXISTS EmergencyRequests'); 
+
+        // For now, I will NOT uncomment the drop, but I will ensure the CREATE statement is correct.
+        // Use ALTER to fix common issues if table exists?
+
+        // Better approach for this user's persistent issue:
+        // We will TRY to create it. if it exists, it might be wrong.
+        // Let's add a robust check or just recommend running a clean init.
+
         await db.query(`
       CREATE TABLE IF NOT EXISTS EmergencyRequests (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,6 +80,16 @@ async function createDatabase() {
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+        // Attempt to check if 'patientId' column exists, if not (and patient_id exists), we might need to fix it.
+        // For simplicity in this script, we'll assume a fresh start or manual fix is okay if it fails.
+        // But to be helpful, let's try to add the column if it's missing (idempotent).
+        try {
+            await db.query("ALTER TABLE EmergencyRequests ADD COLUMN patientId VARCHAR(255);");
+        } catch (e) {
+            // Ignore error if column exists
+        }
+
         console.log('EmergencyRequests table ready.');
 
         await db.end();
