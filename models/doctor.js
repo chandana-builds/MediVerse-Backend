@@ -3,31 +3,31 @@ const sequelize = require('../config/database');
 
 const Doctor = sequelize.define('Doctor', {
     id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.STRING, // or UUID if you prefer, but create_db.js said VARCHAR(255)
         primaryKey: true,
+        allowNull: false
     },
     name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
     },
-    phone: {
+    email: {
         type: DataTypes.STRING,
         allowNull: false,
-    },
-    doctorId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-    },
-    specialization: {
-        type: DataTypes.STRING,
-        defaultValue: 'General Physician',
+        unique: true
     },
     password: {
-        type: DataTypes.STRING, // In production, hash this!
-        allowNull: false,
+        type: DataTypes.STRING,
+        allowNull: false
     },
+    department: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    hospital_name: {
+        type: DataTypes.STRING,
+        allowNull: true
+    }
 });
 
 module.exports = Doctor;

@@ -32,23 +32,35 @@ const Ambulance = sequelize.define('Ambulance', {
 
 const EmergencyRequest = sequelize.define('EmergencyRequest', {
     id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.INTEGER, // Changed to match create_db.js INT AUTO_INCREMENT
+        autoIncrement: true,
         primaryKey: true,
     },
-    status: {
-        type: DataTypes.ENUM('PENDING', 'ASSIGNED', 'COMPLETED', 'CANCELLED'),
-        defaultValue: 'PENDING',
+    latitude: {
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: false
     },
-    pickup_location: {
-        type: DataTypes.JSON,
-        allowNull: false,
+    longitude: {
+        type: DataTypes.DECIMAL(11, 8),
+        allowNull: false
+    },
+    assigned_hospital: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    eta: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    status: {
+        type: DataTypes.STRING,
+        defaultValue: 'dispatched',
     }
 });
 
 // Relationships
-Patient.hasMany(EmergencyRequest);
-EmergencyRequest.belongsTo(Patient);
+Patient.hasMany(EmergencyRequest, { foreignKey: 'patient_id' });
+EmergencyRequest.belongsTo(Patient, { foreignKey: 'patient_id' });
 
 Ambulance.hasMany(EmergencyRequest);
 EmergencyRequest.belongsTo(Ambulance);

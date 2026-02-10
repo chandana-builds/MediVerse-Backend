@@ -1,32 +1,47 @@
+const { EmergencyRequest } = require('../models');
+
 exports.triggerEmergency = async (req, res) => {
     try {
         const { userId, location } = req.body;
 
-        console.log(`[EMERGENCY] Triggered by User: ${userId} at Location:`, location);
+        console.log(`[EMERGENCY] Triggered by Patient: ${userId} at`, location);
 
-        // Mock Logic: Find nearest hospital
-        // In a real app, this would query a Geospatial Database (PostGIS / MongoDB GeoJSON)
-        const mockResponse = {
+        // 1. Mock Assignment Logic
+        const hospitalName = "City General Hospital";
+        const eta = "12 mins";
+
+        // 2. Persist to Database
+        const request = await EmergencyRequest.create({
+            patient_id: userId,
+            latitude: location.lat,
+            longitude: location.lng,
+            assigned_hospital: hospitalName,
+            eta: eta,
+            status: 'dispatched'
+        });
+
+        const responsePayload = {
             success: true,
-            message: "Emergency request received. Ambulance dispatched.",
+            message: "Emergency request logged and ambulance dispatched.",
+            requestId: request.id,
             ambulance: {
                 driver_name: "Rahul Sharma",
                 vehicle_number: "KA-01-EA-1234",
                 phone: "+91-9876543210",
-                eta: "12 mins",
-                tracking_url: "https://maps.google.com/?q=12.9716,77.5946" // Example: Bangalore coordinates
+                eta: eta,
+                tracking_url: `https://maps.google.com/?q=${location.lat},${location.lng}`
             },
             hospital: {
                 id: 101,
-                name: "City General Hospital",
+                name: hospitalName,
                 location: "4.2 km away"
             }
         };
 
         // Simulate network delay
         setTimeout(() => {
-            res.status(200).json(mockResponse);
-        }, 1000);
+            res.status(200).json(responsePayload);
+        }, 800);
 
     } catch (error) {
         console.error("Emergency Trigger Error:", error);
