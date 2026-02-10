@@ -2,9 +2,9 @@ const { Patient, Doctor, Admin } = require('../models');
 
 exports.registerPatient = async (req, res) => {
     try {
-        const { name, age, phone, address, username, password } = req.body;
+        const { name, age, phone, address, username, password, email } = req.body;
 
-        if (!name || !username || !password) {
+        if (!name || !username || !password || !email) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -15,7 +15,7 @@ exports.registerPatient = async (req, res) => {
 
         const patient = await Patient.create({
             id: require('crypto').randomUUID(), // Assuming Patient model expects ID
-            name, age, phone, address, username, password
+            name, age, phone, address, username, password, email
         });
 
         res.json({ success: true, user: patient });
@@ -43,19 +43,9 @@ exports.loginPatient = async (req, res) => {
 
 exports.registerDoctor = async (req, res) => {
     try {
-        // Updated to access the fields sent by frontend: name, email, department (specialization), hospital, username (id?), password
-        // Frontend sends: name, phone, email, specialization (as department), hospital_name (maybe?), username, password.
-        // Let's assume frontend sends: name, email, password, department, hospital_name.
-        // Based on App.jsx, Doctor registration fields were: name, phone, doctorId, specialization, password.
-        // Wait, App.jsx uses `setRegisterData`. I should check what App.jsx sends.
-        // Assuming standard fields based on user request "Doctors table... id, name, email, password, department, hospital_name"
+        const { name, email, password, department, hospital_name, phone, username } = req.body;
 
-        const { name, email, password, department, hospital_name, phone } = req.body;
-        // Note: 'phone' is extra in frontend but maybe not in table? I'll ignore or add if table has it. 
-        // Table in create_db.js: id, name, email, password, department, hospital_name.
-        // I will generate ID from email or random.
-
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !username) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -64,13 +54,20 @@ exports.registerDoctor = async (req, res) => {
             return res.status(400).json({ error: 'Doctor already registered' });
         }
 
+        const existingUser = await Doctor.findOne({ where: { username } });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already taken' });
+        }
+
         const doctor = await Doctor.create({
             id: require('crypto').randomUUID(),
             name,
             email,
+            username,
             password,
             department: department || 'General',
-            hospital_name: hospital_name || 'City Hospital'
+            hospital_name: hospital_name || 'City Hospital',
+            phone
         });
 
         res.json({ success: true, user: doctor });
@@ -82,12 +79,14 @@ exports.registerDoctor = async (req, res) => {
 
 exports.loginDoctor = async (req, res) => {
     try {
-        const { username, password } = req.body; // Frontend likely sends 'username' for doctors too now?
-        // Or if it sends `email`:
-        // Let's check App.jsx. App.jsx sends `registerData` or `credentials`.
-        // `credentials` has `username` and `password`.
+        const { username, password } = req.body;
 
-        const doctor = await Doctor.findOne({ where: { email: username } }); // Assuming username is email for doctors
+        // Allow login with either username or email
+        const doctor = await Doctor.findOne({
+            where: {
+                [require('sequelize').Op.or]: [{ email: username }, { username: username }]
+            }
+        });
 
         if (!doctor || doctor.password !== password) {
             return res.status(401).json({ error: 'Invalid credentials' });

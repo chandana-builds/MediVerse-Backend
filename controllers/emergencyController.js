@@ -10,7 +10,7 @@ exports.triggerEmergency = async (req, res) => {
         const eta = "12 mins";
 
         const request = await EmergencyRequest.create({
-            patient_id: userId,
+            patientId: userId, // Updated to match new model/table column
             latitude: location.lat,
             longitude: location.lng,
             assigned_hospital: hospitalName,

@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 
 const Doctor = sequelize.define('Doctor', {
     id: {
-        type: DataTypes.STRING, // or UUID if you prefer, but create_db.js said VARCHAR(255)
+        type: DataTypes.STRING,
         primaryKey: true,
         allowNull: false
     },
@@ -16,6 +16,11 @@ const Doctor = sequelize.define('Doctor', {
         allowNull: false,
         unique: true
     },
+    username: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true
+    },
     password: {
         type: DataTypes.STRING,
         allowNull: false
@@ -25,6 +30,10 @@ const Doctor = sequelize.define('Doctor', {
         allowNull: true
     },
     hospital_name: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    phone: {
         type: DataTypes.STRING,
         allowNull: true
     }

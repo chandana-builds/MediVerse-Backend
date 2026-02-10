@@ -25,10 +25,17 @@ async function createDatabase() {
         id VARCHAR(255) PRIMARY KEY,
         name VARCHAR(255),
         email VARCHAR(255) UNIQUE,
+        username VARCHAR(255) UNIQUE, 
         password VARCHAR(255),
         age INT,
         phone VARCHAR(20),
-        address TEXT
+        address TEXT,
+        medical_history JSON,
+        family_members JSON,
+        appointments JSON,
+        streak INT DEFAULT 0,
+        last_streak_date VARCHAR(20),
+        location JSON
       )
     `);
         console.log('Patients table ready.');
@@ -39,9 +46,11 @@ async function createDatabase() {
         id VARCHAR(255) PRIMARY KEY,
         name VARCHAR(255),
         email VARCHAR(255) UNIQUE,
+        username VARCHAR(255) UNIQUE,
         password VARCHAR(255),
         department VARCHAR(100),
-        hospital_name VARCHAR(255)
+        hospital_name VARCHAR(255),
+        phone VARCHAR(20)
       )
     `);
         console.log('Doctors table ready.');
@@ -50,7 +59,7 @@ async function createDatabase() {
         await db.query(`
       CREATE TABLE IF NOT EXISTS EmergencyRequests (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        patient_id VARCHAR(255),
+        patientId VARCHAR(255),
         latitude DECIMAL(10, 8),
         longitude DECIMAL(11, 8),
         assigned_hospital VARCHAR(255),

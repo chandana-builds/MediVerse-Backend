@@ -32,9 +32,13 @@ const Ambulance = sequelize.define('Ambulance', {
 
 const EmergencyRequest = sequelize.define('EmergencyRequest', {
     id: {
-        type: DataTypes.INTEGER, // Changed to match create_db.js INT AUTO_INCREMENT
+        type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+    },
+    patientId: { // Changed from patient_id to patientId to match table column verification request
+        type: DataTypes.STRING,
+        allowNull: true // Allow null if patient not registered? Or strict? User said patientId column exists.
     },
     latitude: {
         type: DataTypes.DECIMAL(10, 8),
@@ -59,8 +63,8 @@ const EmergencyRequest = sequelize.define('EmergencyRequest', {
 });
 
 // Relationships
-Patient.hasMany(EmergencyRequest, { foreignKey: 'patient_id' });
-EmergencyRequest.belongsTo(Patient, { foreignKey: 'patient_id' });
+Patient.hasMany(EmergencyRequest, { foreignKey: 'patientId' });
+EmergencyRequest.belongsTo(Patient, { foreignKey: 'patientId' });
 
 Ambulance.hasMany(EmergencyRequest);
 EmergencyRequest.belongsTo(Ambulance);
