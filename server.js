@@ -12,7 +12,11 @@ const app = express();
 const server = http.createServer(app); // Create HTTP server for Socket.io
 const PORT = 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://mediverse-frontend-gamma.vercel.app', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use(express.static('public')); // Serve static files (HTML, CSS, JS)
 
