@@ -6,11 +6,9 @@ exports.triggerEmergency = async (req, res) => {
 
         console.log(`[EMERGENCY] Triggered by Patient: ${userId} at`, location);
 
-        // 1. Mock Assignment Logic
         const hospitalName = "City General Hospital";
         const eta = "12 mins";
 
-        // 2. Persist to Database
         const request = await EmergencyRequest.create({
             patient_id: userId,
             latitude: location.lat,
@@ -20,7 +18,8 @@ exports.triggerEmergency = async (req, res) => {
             status: 'dispatched'
         });
 
-        const responsePayload = {
+        // IMMEDIATELY return success response as requested
+        return res.status(200).json({
             success: true,
             message: "Emergency request logged and ambulance dispatched.",
             requestId: request.id,
@@ -36,15 +35,13 @@ exports.triggerEmergency = async (req, res) => {
                 name: hospitalName,
                 location: "4.2 km away"
             }
-        };
-
-        // Simulate network delay
-        setTimeout(() => {
-            res.status(200).json(responsePayload);
-        }, 800);
+        });
 
     } catch (error) {
         console.error("Emergency Trigger Error:", error);
-        res.status(500).json({ success: false, message: "Failed to process emergency request." });
+        // Ensure headers aren't already sent
+        if (!res.headersSent) {
+            return res.status(500).json({ success: false, message: "Failed to process emergency request." });
+        }
     }
 };
