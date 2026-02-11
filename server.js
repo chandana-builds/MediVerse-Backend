@@ -43,7 +43,12 @@ const prescriptionController = require('./controllers/prescriptionController');
 const io = socket.init(server);
 global.io = io;
 
+
 app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+// Health Check Endpoint for Railway
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok', timestamp: new Date() }));
+
 
 // --- ROUTES ---
 app.post('/api/auth/register/patient', authController.registerPatient);
@@ -83,6 +88,16 @@ process.on('unhandledRejection', (err) => console.error('Unhandled Rejection:', 
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 
 // Start Server - Bound to 0.0.0.0 for Railway/Cloud Deployment
+
+// Start Server - Bound to 0.0.0.0 for Railway/Cloud Deployment
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 MediVerse Backend live on port ${PORT}`);
+
+  // Log Environment Config for Debugging (Masked)
+  const dbHost = process.env.DB_HOST || 'via DATABASE_URL';
+  console.log(`ℹ️  DB Configuration: Host=${dbHost}, Port=${process.env.DB_PORT || 'Default'}`);
+
+  if (process.env.DB_HOST && process.env.DB_HOST.includes('railway.app') && process.env.DB_HOST.includes('mediverse-backend')) {
+    console.warn('⚠️  WARNING: DB_HOST looks like the Backend URL. It should be the Database Internal URL.');
+  }
 });
