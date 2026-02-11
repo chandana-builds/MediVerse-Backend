@@ -9,6 +9,7 @@ const MANUAL_URL =
 // 2. Railway Internal URL (deployment)
 // 3. DATABASE_URL
 // 4. Manual fallback
+
 const DB_URL =
     process.env.MYSQL_PUBLIC_URL ||
     process.env.DATABASE_URL ||
@@ -23,15 +24,20 @@ if (DB_URL) {
     console.error('❌ No database connection string found!');
 }
 
+// FIX: Railway Internal Network uses private networking which can fail with strict SSL
+// We only want strict SSL if we are connecting via the PUBLIC internet (e.g. .rlwy.net)
+const isExternalConnection = DB_URL && (DB_URL.includes('rlwy.net') || DB_URL.includes('railway.app'));
+console.log(`🔒 SSL Mode: ${isExternalConnection ? 'ENABLED (Public)' : 'DISABLED (Internal/Local)'}`);
+
 const sequelize = new Sequelize(DB_URL, {
     dialect: 'mysql',
     logging: false,
 
     dialectOptions: {
-        ssl: {
+        ssl: isExternalConnection ? {
             require: true,
             rejectUnauthorized: false
-        },
+        } : false, // Disable SSL for internal connections to prevent "Connection lost"
         connectTimeout: 100000
     },
 
