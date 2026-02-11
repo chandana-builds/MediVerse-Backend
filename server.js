@@ -44,9 +44,11 @@ const patientController = require('./controllers/patientController');
 const adminController = require('./controllers/adminController');
 const prescriptionController = require('./controllers/prescriptionController');
 
+
 // Initialize Socket.io
 const io = socket.init(server);
 global.io = io;
+global.mockMode = false; // Default to false
 
 // Handle favicon
 app.get('/favicon.ico', (req, res) => res.status(204).end());
@@ -71,48 +73,36 @@ app.get('/api/prescription/patient/:patientId', prescriptionController.getPatien
 
 app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 
-// Database Sync Attempt with Connection Monitoring
-sequelize.authenticate()
-  .then(() => {
+// STARTUP LOGIC
+const startServer = async () => {
+  try {
+    console.log('🔄 Connecting to Database...');
+    await sequelize.authenticate();
     console.log('✅ Database connected successfully.');
-    return sequelize.sync({ alter: true });
-  })
-  .then(() => {
+    await sequelize.sync({ alter: true });
     console.log('✅ Models synced.');
     global.mockMode = false;
-  })
-  .catch(err => {
+  } catch (err) {
     console.warn('--------------------------------------------------');
     console.warn('❌ Database connection failed:', err.message);
-    console.warn('⚠️  Check Railway DB_HOST or MYSQL_URL variables.');
-    console.warn('⚠️  Server running in MOCK MODE (Static data only).');
+    console.warn('⚠️  Server switching to MOCK MODE.');
     console.warn('--------------------------------------------------');
     global.mockMode = true;
+  }
+
+  // Start Server - Bound to 0.0.0.0 for Railway/Vercel Connectivity
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 MediVerse Backend live on port ${PORT}`);
+    console.log(`ℹ️  Mode: ${global.mockMode ? 'MOCK (Static Data)' : 'LIVE (Database)'}`);
+
+    // Diagnostic info
+    const dbHost = process.env.MYSQLHOST || process.env.DB_HOST || 'URL-based';
+    console.log(`ℹ️  Target Host: ${dbHost}`);
   });
+};
+
+startServer();
 
 // Error Handling to prevent crashing during build/runtime
 process.on('unhandledRejection', (err) => console.error('Unhandled Rejection:', err));
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
-
-
-// Start Server - Bound to 0.0.0.0 for Railway/Vercel Connectivity
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 MediVerse Backend live on port ${PORT}`);
-
-  // DIAGNOSTIC START
-  const targetHost = process.env.DB_HOST || 'mysql.railway.internal';
-  console.log(`🔍 DIAGNOSTIC: Resolving ${targetHost}...`);
-  dns.lookup(targetHost, (err, address, family) => {
-    if (err) {
-      console.error(`❌ DNS Resolution FAILED for ${targetHost}:`, err.message);
-      console.warn(`⚠️  This means the backend cannot find the database on the network.`);
-    } else {
-      console.log(`✅ DNS Resolution SUCCESS: ${targetHost} -> ${address}`);
-    }
-  });
-
-  const dbHost = process.env.MYSQLHOST || process.env.DB_HOST || 'URL-based';
-
-  console.log(`ℹ️  Runtime Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`ℹ️  Target Database Host: ${dbHost}`);
-});
