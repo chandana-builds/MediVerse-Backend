@@ -1,11 +1,13 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
+// Import model definitions
 const Patient = require('./patient');
 const Doctor = require('./doctor');
 const Admin = require('./admin');
 const Prescription = require('./prescription');
 
+// Define Ambulance Model
 const Ambulance = sequelize.define('Ambulance', {
     id: {
         type: DataTypes.UUID,
@@ -21,7 +23,7 @@ const Ambulance = sequelize.define('Ambulance', {
         defaultValue: true,
     },
     location: {
-        type: DataTypes.JSON,
+        type: DataTypes.JSON, // Stores current latitude/longitude
         allowNull: false,
     },
     socket_id: {
@@ -30,15 +32,16 @@ const Ambulance = sequelize.define('Ambulance', {
     }
 });
 
+// Define EmergencyRequest Model
 const EmergencyRequest = sequelize.define('EmergencyRequest', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
     },
-    patientId: { // Changed from patient_id to patientId to match table column verification request
-        type: DataTypes.STRING,
-        allowNull: true // Allow null if patient not registered? Or strict? User said patientId column exists.
+    patientId: {
+        type: DataTypes.INTEGER, // Ensure this matches the ID type in patient.js
+        allowNull: true,
     },
     latitude: {
         type: DataTypes.DECIMAL(10, 8),
@@ -57,23 +60,36 @@ const EmergencyRequest = sequelize.define('EmergencyRequest', {
         allowNull: true
     },
     status: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('dispatched', 'en-route', 'completed', 'cancelled'),
         defaultValue: 'dispatched',
     }
 });
 
-// Relationships
+// --- RELATIONSHIPS ---
+
+// Emergency & Patient
 Patient.hasMany(EmergencyRequest, { foreignKey: 'patientId' });
 EmergencyRequest.belongsTo(Patient, { foreignKey: 'patientId' });
 
-Ambulance.hasMany(EmergencyRequest);
-EmergencyRequest.belongsTo(Ambulance);
+// Emergency & Ambulance
+Ambulance.hasMany(EmergencyRequest, { foreignKey: 'ambulanceId' });
+EmergencyRequest.belongsTo(Ambulance, { foreignKey: 'ambulanceId' });
 
-// Prescription Relationships
+// Prescription & Patient
 Patient.hasMany(Prescription, { foreignKey: 'patientId' });
 Prescription.belongsTo(Patient, { foreignKey: 'patientId' });
 
+// Prescription & Doctor
 Doctor.hasMany(Prescription, { foreignKey: 'doctorId' });
 Prescription.belongsTo(Doctor, { foreignKey: 'doctorId' });
 
-module.exports = { Patient, Doctor, Admin, Ambulance, EmergencyRequest, Prescription, sequelize };
+// Export everything as a single object
+module.exports = {
+    Patient,
+    Doctor,
+    Admin,
+    Ambulance,
+    EmergencyRequest,
+    Prescription,
+    sequelize
+};
