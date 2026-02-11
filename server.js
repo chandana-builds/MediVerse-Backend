@@ -6,9 +6,12 @@ const bodyParser = require('body-parser');
 // Import DB and Socket
 const { sequelize } = require('./models');
 const socket = require('./socket');
+
 const emergencyController = require('./controllers/emergencyController');
+const dns = require('dns'); // Added for network debugging
 
 const app = express();
+
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
@@ -91,12 +94,25 @@ sequelize.authenticate()
 process.on('unhandledRejection', (err) => console.error('Unhandled Rejection:', err));
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 
+
 // Start Server - Bound to 0.0.0.0 for Railway/Vercel Connectivity
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 MediVerse Backend live on port ${PORT}`);
 
-  // Debug logging for Mentor verification
+  // DIAGNOSTIC START
+  const targetHost = process.env.DB_HOST || 'mysql.railway.internal';
+  console.log(`🔍 DIAGNOSTIC: Resolving ${targetHost}...`);
+  dns.lookup(targetHost, (err, address, family) => {
+    if (err) {
+      console.error(`❌ DNS Resolution FAILED for ${targetHost}:`, err.message);
+      console.warn(`⚠️  This means the backend cannot find the database on the network.`);
+    } else {
+      console.log(`✅ DNS Resolution SUCCESS: ${targetHost} -> ${address}`);
+    }
+  });
+
   const dbHost = process.env.MYSQLHOST || process.env.DB_HOST || 'URL-based';
+
   console.log(`ℹ️  Runtime Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`ℹ️  Target Database Host: ${dbHost}`);
 });
