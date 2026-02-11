@@ -48,8 +48,10 @@ global.io = io;
 // Handle favicon
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
+
 // FIX: Health Check for Railway Deployment Monitoring
-app.get('/health', (req, res) => res.status(200).json({ status: 'ok', mode: global.mockMode ? 'mock' : 'live' }));
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok', mode: (global.mockMode === true) ? 'mock' : 'live' }));
+
 
 // --- ROUTES ---
 app.post('/api/auth/register/patient', authController.registerPatient);

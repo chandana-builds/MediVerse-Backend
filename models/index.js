@@ -39,10 +39,12 @@ const EmergencyRequest = sequelize.define('EmergencyRequest', {
         autoIncrement: true,
         primaryKey: true,
     },
+
     patientId: {
-        type: DataTypes.INTEGER, // Ensure this matches the ID type in patient.js
+        type: DataTypes.UUID, // Changed from INTEGER to match Patient.id (UUID)
         allowNull: true,
     },
+
     latitude: {
         type: DataTypes.DECIMAL(10, 8),
         allowNull: false
