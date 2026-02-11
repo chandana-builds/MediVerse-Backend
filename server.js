@@ -7,26 +7,31 @@ const bodyParser = require('body-parser');
 const { sequelize } = require('./models');
 const socket = require('./socket');
 
+
 const emergencyController = require('./controllers/emergencyController');
-const dns = require('dns'); // Added for network debugging
 
 const app = express();
 
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
-// FIX: Improved CORS to prevent 'Register Fail' errors on Vercel
+
+// FIX: Improved CORS to prevent 'Register Fail' errors on Vercel and Localhost
 app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'http://localhost:5173',
       'https://mediverse-frontend-gamma.vercel.app',
       'http://localhost:3000'
     ];
-    // Allow requests with no origin (like mobile apps) or if in allowed list
-    if (!origin || allowedOrigins.includes(origin)) {
+
+    // Allow any localhost port (5173, 5174, etc.)
+    const isLocalhost = origin && /^http:\/\/localhost:\d+$/.test(origin);
+
+    // Allow requests with no origin (like mobile apps) or if in allowed list or isLocalhost
+    if (!origin || allowedOrigins.includes(origin) || isLocalhost) {
       callback(null, true);
     } else {
+      console.warn(`⚠️ CORS Blocked Origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -83,9 +88,11 @@ const startServer = async () => {
     console.log('✅ Models synced.');
     global.mockMode = false;
   } catch (err) {
+
     console.warn('--------------------------------------------------');
     console.warn('❌ Database connection failed:', err.message);
     console.warn('⚠️  Server switching to MOCK MODE.');
+    console.warn('   (Data will NOT be saved to database)');
     console.warn('--------------------------------------------------');
     global.mockMode = true;
   }

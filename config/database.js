@@ -1,35 +1,40 @@
-
+require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
-// User-provided Fallback URL (Emergency Access)
-const MANUAL_URL = 'mysql://root:fuRtlnkLEZSvtNFUGrSzeLedgJLObcbo@mysql.railway.internal:3306/railway';
+// Fallback ONLY if nothing exists (last option)
+const MANUAL_URL =
+    'mysql://root:fuRtlnkLEZSvtNFUGrSzeLedgJLObcbo@caboose.proxy.rlwy.net:51130/railway';
+// Priority Order
+// 1. Railway Public URL (local use)
+// 2. Railway Internal URL (deployment)
+// 3. DATABASE_URL
+// 4. Manual fallback
+const DB_URL =
+    process.env.MYSQL_PUBLIC_URL ||
+    process.env.DATABASE_URL ||
+    process.env.MYSQL_URL ||
+    MANUAL_URL;
 
-
-
-// Robust DB Connection String Logic
-// Priority: 1. RAILWAY provided vars (MYSQL_URL, DATABASE_URL)
-//           2. Hardcoded Fallback (Only if env vars missing)
-const DB_URL = process.env.MYSQL_URL || process.env.DATABASE_URL || process.env.MYSQLPUBLIC_URL || MANUAL_URL;
-
-// Debugging: Log the selected URL (Masked)
+// Debug Masked Log
 if (DB_URL) {
     const masked = DB_URL.replace(/:[^:@]+@/, ':****@');
-    console.log(`🔌 Database Config: Using Connection String -> ${masked}`);
+    console.log(`🔌 Using DB URL -> ${masked}`);
 } else {
-    console.error('❌ Database Config: No connection string found!');
+    console.error('❌ No database connection string found!');
 }
 
 const sequelize = new Sequelize(DB_URL, {
-
-
     dialect: 'mysql',
     logging: false,
+
     dialectOptions: {
         ssl: {
+            require: true,
             rejectUnauthorized: false
         },
-        connectTimeout: 60000 // Increase connection timeout to 60s
+        connectTimeout: 100000
     },
+
     pool: {
         max: 5,
         min: 0,
@@ -37,5 +42,11 @@ const sequelize = new Sequelize(DB_URL, {
         idle: 10000
     }
 });
+
+// Test connection immediately
+sequelize
+    .authenticate()
+    .then(() => console.log('✅ MySQL Connected Successfully'))
+    .catch(err => console.error('❌ DB Connection Failed:', err.message));
 
 module.exports = sequelize;
