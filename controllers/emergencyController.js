@@ -14,10 +14,34 @@ exports.triggerEmergency = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid location data." });
         }
 
+
         const hospitalName = "City General Hospital";
         const eta = "12 mins";
 
+        // Mock Mode / Fallback
+        if (global.mockMode) {
+            console.log('[MOCK] Emergency Triggered');
+            return res.status(200).json({
+                success: true,
+                message: "Emergency request logged (MOCK).",
+                requestId: 'MOCK-' + Date.now(),
+                ambulance: {
+                    driver_name: "Rahul Sharma",
+                    vehicle_number: "KA-01-EA-1234",
+                    phone: "+91-9876543210",
+                    eta: eta,
+                    tracking_url: `https://maps.google.com/?q=${location.lat},${location.lng}`
+                },
+                hospital: {
+                    id: 101,
+                    name: hospitalName,
+                    location: "4.2 km away"
+                }
+            });
+        }
+
         // 2. Database Creation (SKIPPED/OPTIONAL as per User Request to fix 500 error)
+
         // We will try to log it, but if it fails, we will NOT stop the response.
         let request = { id: 'MOCK-' + Date.now() }; // Default mock ID
 

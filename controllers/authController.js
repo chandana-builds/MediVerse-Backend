@@ -9,14 +9,24 @@ exports.registerPatient = async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+
         // Mock Mode Check
         if (global.mockMode) {
             console.log('Mock Registration: Patient');
+            // Return consistent mock user
             return res.json({
                 success: true,
-                user: { id: 'mock-patient-id', name, username, email, role: 'patient' }
+                user: {
+                    id: 'mock-patient-id',
+                    name,
+                    age: age || 30,
+                    username,
+                    email,
+                    role: 'patient'
+                }
             });
         }
+
 
         const existing = await Patient.findOne({ where: { username } });
 
@@ -71,13 +81,23 @@ exports.registerDoctor = async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+
         if (global.mockMode) {
             console.log('Mock Registration: Doctor');
             return res.json({
                 success: true,
-                user: { id: 'mock-doctor-id', name, username, email, role: 'doctor' }
+                user: {
+                    id: 'mock-doctor-id',
+                    name,
+                    username,
+                    email,
+                    department: department || 'General',
+                    hospital_name: hospital_name || 'City Hospital',
+                    role: 'doctor'
+                }
             });
         }
+
 
         const existing = await Doctor.findOne({ where: { email } });
 
@@ -113,12 +133,22 @@ exports.loginDoctor = async (req, res) => {
     try {
         const { username, password } = req.body;
 
+
         if (global.mockMode) {
             return res.json({
                 success: true,
-                user: { id: 'mock-doctor-id', name: 'Mock Doctor', username, role: 'doctor' }
+                user: {
+                    id: 'mock-doctor-id',
+                    name: 'Dr. Mock',
+                    username,
+                    email: username.includes('@') ? username : 'mock@doctor.com',
+                    role: 'doctor',
+                    department: 'Cardiology',
+                    hospital_name: 'Metro General'
+                }
             });
         }
+
 
         // Allow login with either username or email
         const doctor = await Doctor.findOne({
