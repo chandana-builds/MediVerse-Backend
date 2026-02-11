@@ -1,5 +1,6 @@
 const { Patient, Doctor, Admin } = require('../models');
 
+
 exports.registerPatient = async (req, res) => {
     try {
         const { name, age, phone, address, username, password, email } = req.body;
@@ -8,7 +9,17 @@ exports.registerPatient = async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+        // Mock Mode Check
+        if (global.mockMode) {
+            console.log('Mock Registration: Patient');
+            return res.json({
+                success: true,
+                user: { id: 'mock-patient-id', name, username, email, role: 'patient' }
+            });
+        }
+
         const existing = await Patient.findOne({ where: { username } });
+
         if (existing) {
             return res.status(400).json({ error: 'Username already exists' });
         }
@@ -25,9 +36,19 @@ exports.registerPatient = async (req, res) => {
     }
 };
 
+
 exports.loginPatient = async (req, res) => {
     try {
         const { username, password } = req.body;
+
+        if (global.mockMode) {
+            console.log('Mock Login: Patient');
+            return res.json({
+                success: true,
+                user: { id: 'mock-patient-id', name: 'Mock Patient', username, role: 'patient' }
+            });
+        }
+
         const patient = await Patient.findOne({ where: { username } });
 
         if (!patient || patient.password !== password) {
@@ -41,6 +62,7 @@ exports.loginPatient = async (req, res) => {
     }
 };
 
+
 exports.registerDoctor = async (req, res) => {
     try {
         const { name, email, password, department, hospital_name, phone, username } = req.body;
@@ -49,7 +71,16 @@ exports.registerDoctor = async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+        if (global.mockMode) {
+            console.log('Mock Registration: Doctor');
+            return res.json({
+                success: true,
+                user: { id: 'mock-doctor-id', name, username, email, role: 'doctor' }
+            });
+        }
+
         const existing = await Doctor.findOne({ where: { email } });
+
         if (existing) {
             return res.status(400).json({ error: 'Doctor already registered' });
         }
@@ -77,9 +108,17 @@ exports.registerDoctor = async (req, res) => {
     }
 };
 
+
 exports.loginDoctor = async (req, res) => {
     try {
         const { username, password } = req.body;
+
+        if (global.mockMode) {
+            return res.json({
+                success: true,
+                user: { id: 'mock-doctor-id', name: 'Mock Doctor', username, role: 'doctor' }
+            });
+        }
 
         // Allow login with either username or email
         const doctor = await Doctor.findOne({

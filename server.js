@@ -94,12 +94,15 @@ sequelize.authenticate()
   .then(() => {
     console.log('Models synced.');
   })
+
   .catch(err => {
     console.warn('--------------------------------------------------');
     console.warn('Database connection failed:', err.message);
     console.warn('Server running in MOCK MODE (APIs will return static data).');
     console.warn('--------------------------------------------------');
+    global.mockMode = true; // Enable mock mode for controllers
   });
+
 
 // Start Server
 server.listen(PORT, () => {
