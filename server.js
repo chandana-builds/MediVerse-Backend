@@ -83,6 +83,21 @@ const startServer = async () => {
 
     console.error('--------------------------------------------------');
     console.error('❌ Database connection failed:', err);
+
+    // Auto-fix for "Too many keys" error (Railway/MySQL limit)
+    const errString = err.toString();
+    if (errString.includes('Too many keys') || (err.original && err.original.code === 'ER_TOO_MANY_KEYS')) {
+      console.error('⚠️  DETECTED KEY LIMIT ISSUE. Attempting auto-fix by resetting EmergencyRequest table...');
+      try {
+        const { EmergencyRequest } = require('./models');
+        await EmergencyRequest.sync({ force: true });
+        console.log('✅ Auto-fix successful! Exiting to trigger restart...');
+        process.exit(1);
+      } catch (fixErr) {
+        console.error('❌ Auto-fix failed:', fixErr);
+      }
+    }
+
     console.error('⚠️  CRITICAL: Database is required. Exiting...');
     console.error('--------------------------------------------------');
     // Exit process to allow Railway to restart the container or show crash log
