@@ -81,12 +81,12 @@ const startServer = async () => {
     global.mockMode = false;
   } catch (err) {
 
-    console.warn('--------------------------------------------------');
-    console.warn('❌ Database connection failed:', err.message);
-    console.warn('⚠️  Server switching to MOCK MODE.');
-    console.warn('   (Data will NOT be saved to database)');
-    console.warn('--------------------------------------------------');
-    global.mockMode = true;
+    console.error('--------------------------------------------------');
+    console.error('❌ Database connection failed:', err.message);
+    console.error('⚠️  CRITICAL: Database is required. Exiting...');
+    console.error('--------------------------------------------------');
+    // Exit process to allow Railway to restart the container or show crash log
+    process.exit(1);
   }
 
   // Start Server - Bound to 0.0.0.0 for Railway/Vercel Connectivity

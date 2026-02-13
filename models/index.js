@@ -64,6 +64,11 @@ const EmergencyRequest = sequelize.define('EmergencyRequest', {
     status: {
         type: DataTypes.ENUM('dispatched', 'en-route', 'completed', 'cancelled'),
         defaultValue: 'dispatched',
+    },
+    // Explicitly define foreign key to prevent "Duplicate column" error during sync
+    ambulanceId: {
+        type: DataTypes.UUID,
+        allowNull: true
     }
 });
 
