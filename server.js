@@ -3,6 +3,18 @@ const cors = require('cors');
 const http = require('http');
 const bodyParser = require('body-parser');
 
+const bodyParser = require('body-parser');
+
+console.log('🚀 Starting Server...');
+console.log('📂 Current Working Directory:', process.cwd());
+console.log('🔧 Node Version:', process.version);
+console.log('🔑 Environment Variables Check:');
+console.log('   - PORT:', process.env.PORT || 'Not Set (Default 5000)');
+console.log('   - DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'MISSING');
+console.log('   - MYSQL_URL:', process.env.MYSQL_URL ? 'Set' : 'MISSING');
+console.log('   - MYSQL_PUBLIC_URL:', process.env.MYSQL_PUBLIC_URL ? 'Set' : 'MISSING');
+console.log('   - NODE_ENV:', process.env.NODE_ENV);
+
 // Import DB and Socket
 const { sequelize } = require('./models');
 const socket = require('./socket');
