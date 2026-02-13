@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const { Sequelize } = require('sequelize');
 
 // Fallback ONLY if nothing exists (last option)
@@ -15,6 +16,14 @@ const DB_URL =
 if (DB_URL) {
     const masked = DB_URL.replace(/:[^:@]+@/, ':****@');
     console.log(`🔌 Using DB URL -> ${masked}`);
+
+    // CRITICAL: Prevent using API URL as Database URL
+    if (DB_URL.startsWith('http://') || DB_URL.startsWith('https://')) {
+        console.error('❌ CRITICAL CONFIG ERROR: Your DATABASE_URL or MYSQL_PUBLIC_URL is set to an HTTP URL!');
+        console.error('   It MUST be a MySQL connection string starting with "mysql://"');
+        console.error('   Please check your Railway Variables and remove the incorrect URL.');
+        process.exit(1);
+    }
 } else {
     console.error('❌ No database connection string found! Please set DATABASE_URL in Railway.');
 }

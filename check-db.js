@@ -3,7 +3,7 @@ require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
 // The same fallback logic as database.js, to test it exactly
-const MANUAL_URL = 'mysql://root:fuRtlnkLEZSvtNFUGrSzeLedgJLObcbo@caboose.proxy.rlwy.net:51130/railway';
+const MANUAL_URL = 'mysql://root:hziqQbShuVmUojbMKzKpGeUzCUpujlVM@nozomi.proxy.rlwy.net:41566/railway';
 
 const DB_URL =
     process.env.MYSQL_PUBLIC_URL ||

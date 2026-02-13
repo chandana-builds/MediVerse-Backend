@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "reset-db": "node reset_table.js",
-    "init-db": "node create_db.js"
+    "init-db": "node create_db.js",
+    "check-db": "node check_db_config.js"
   },
   "keywords": [],
   "author": "",
