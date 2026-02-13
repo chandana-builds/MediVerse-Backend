@@ -16,25 +16,9 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 
-// FIX: Improved CORS to prevent 'Register Fail' errors on Vercel and Localhost
+// FIX: Relaxed CORS for debugging and ensuring connectivity
 app.use(cors({
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://mediverse-frontend-gamma.vercel.app',
-      'http://localhost:3000'
-    ];
-
-    // Allow any localhost port (5173, 5174, etc.)
-    const isLocalhost = origin && /^http:\/\/localhost:\d+$/.test(origin);
-
-    // Allow requests with no origin (like mobile apps) or if in allowed list or isLocalhost
-    if (!origin || allowedOrigins.includes(origin) || isLocalhost) {
-      callback(null, true);
-    } else {
-      console.warn(`⚠️ CORS Blocked Origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Allow all origins reflected
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -76,7 +60,15 @@ app.get('/api/admin/database', adminController.getAllDatabaseRecords);
 app.post('/api/prescription/add', prescriptionController.addPrescription);
 app.get('/api/prescription/patient/:patientId', prescriptionController.getPatientPrescriptions);
 
-app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
+// Root route for backend status check
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    service: 'MediVerse Backend',
+    mode: global.mockMode ? 'mock' : 'live',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // STARTUP LOGIC
 const startServer = async () => {

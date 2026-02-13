@@ -2,13 +2,8 @@ require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
 // Fallback ONLY if nothing exists (last option)
-const MANUAL_URL =
-    'mysql://root:fuRtlnkLEZSvtNFUGrSzeLedgJLObcbo@caboose.proxy.rlwy.net:51130/railway';
-// Priority Order
-// 1. Railway Public URL (local use)
-// 2. Railway Internal URL (deployment)
-// 3. DATABASE_URL
-// 4. Manual fallback
+// NOTE: This manual URL is likely stale. Please ensure DATABASE_URL is set in Railway Variables.
+const MANUAL_URL = process.env.MANUAL_DB_URL || null;
 
 const DB_URL =
     process.env.MYSQL_PUBLIC_URL ||
@@ -21,24 +16,25 @@ if (DB_URL) {
     const masked = DB_URL.replace(/:[^:@]+@/, ':****@');
     console.log(`🔌 Using DB URL -> ${masked}`);
 } else {
-    console.error('❌ No database connection string found!');
+    console.error('❌ No database connection string found! Please set DATABASE_URL in Railway.');
 }
 
-// FIX: Railway Internal Network uses private networking which can fail with strict SSL
-// We only want strict SSL if we are connecting via the PUBLIC internet (e.g. .rlwy.net)
+// Detect Railway Environment or Production
+const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_GIT_COMMIT_SHA || process.env.NODE_ENV === 'production';
 const isExternalConnection = DB_URL && (DB_URL.includes('rlwy.net') || DB_URL.includes('railway.app'));
-console.log(`🔒 SSL Mode: ${isExternalConnection ? 'ENABLED (Public)' : 'DISABLED (Internal/Local)'}`);
+
+console.log(`🌍 Environment: ${isRailway ? 'Railway/Production' : 'Local/Development'}`);
 
 const sequelize = new Sequelize(DB_URL, {
     dialect: 'mysql',
     logging: false,
 
     dialectOptions: {
-        ssl: isExternalConnection ? {
+        ssl: (isRailway || isExternalConnection) ? {
             require: true,
             rejectUnauthorized: false
-        } : false, // Disable SSL for internal connections to prevent "Connection lost"
-        connectTimeout: 100000
+        } : false,
+        connectTimeout: 60000
     },
 
     pool: {
