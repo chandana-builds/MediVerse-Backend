@@ -82,7 +82,7 @@ const startServer = async () => {
   } catch (err) {
 
     console.error('--------------------------------------------------');
-    console.error('❌ Database connection failed:', err.message);
+    console.error('❌ Database connection failed:', err);
     console.error('⚠️  CRITICAL: Database is required. Exiting...');
     console.error('--------------------------------------------------');
     // Exit process to allow Railway to restart the container or show crash log

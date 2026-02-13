@@ -12,7 +12,7 @@ const Prescription = sequelize.define('Prescription', {
         allowNull: false,
     },
     doctorId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING, // Changed to STRING to match Doctor.id type
         allowNull: false,
     },
     medicines: {
