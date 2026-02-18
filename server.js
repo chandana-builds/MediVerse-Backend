@@ -72,6 +72,10 @@ app.get('/api/admin/database', adminController.getAllDatabaseRecords);
 app.post('/api/prescription/add', prescriptionController.addPrescription);
 app.get('/api/prescription/patient/:patientId', prescriptionController.getPatientPrescriptions);
 
+const aiController = require('./controllers/aiController');
+app.post('/api/ai/chat', aiController.chat);
+
+
 // Root route for backend status check
 app.get('/', (req, res) => {
   res.json({
