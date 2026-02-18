@@ -51,13 +51,13 @@ exports.getPatientPrescriptions = async (req, res) => {
 
         const prescriptions = await Prescription.findAll({
             where: { patientId },
-            include: [{ model: Doctor, attributes: ['name', 'specialization'] }],
+            include: [{ model: Doctor, attributes: ['name', 'department'] }], // Changed 'specialization' to 'department' to match Doctor model
             order: [['createdAt', 'DESC']]
         });
 
         res.json({ success: true, prescriptions });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to fetch prescriptions' });
+        console.error("Get Prescriptions Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch prescriptions' });
     }
 };

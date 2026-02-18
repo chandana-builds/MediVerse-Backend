@@ -24,7 +24,7 @@ exports.getAllDatabaseRecords = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to fetch database records' });
+        console.error("Admin DB View Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch database records' });
     }
 };

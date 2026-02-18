@@ -174,12 +174,12 @@ exports.loginAdmin = async (req, res) => {
         const admin = await Admin.findOne({ where: { username } });
 
         if (!admin || admin.password !== password) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ success: false, error: 'Invalid credentials' });
         }
 
         res.json({ success: true, user: admin });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
+        console.error("Admin Login Error:", err);
+        res.status(500).json({ success: false, error: err.message });
     }
 };
