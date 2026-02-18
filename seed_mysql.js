@@ -18,11 +18,13 @@ async function seed() {
 
         // 2. Seed Doctor
         const drSarah = await Doctor.create({
+            id: 'DOC_001',
             name: 'Dr. Sarah Wilson',
+            email: 'sarah.wilson@mediverse.com',
             phone: '+91 98765 43210',
-            doctorId: 'DOC_001',
-            specialization: 'Cardiologist',
-            password: 'doc123'
+            department: 'Cardiologist',
+            password: 'doc123',
+            username: 'drsarah'
         });
         console.log('Doctor seeded.');
 
