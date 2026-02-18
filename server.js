@@ -96,7 +96,6 @@ const startServer = async () => {
     console.log('✅ Models synced.');
     global.mockMode = false;
   } catch (err) {
-
     console.error('--------------------------------------------------');
     console.error('❌ Database connection failed:', err);
 
@@ -107,8 +106,19 @@ const startServer = async () => {
       try {
         const { EmergencyRequest } = require('./models');
         await EmergencyRequest.sync({ force: true });
-        console.log('✅ Auto-fix successful! Exiting to trigger restart...');
-        process.exit(1);
+        console.log('✅ EmergencyRequest table reset. Retrying full sync...');
+
+        // Retry sync
+        await sequelize.sync({ alter: true });
+        console.log('✅ Retry successful. Models synced.');
+        global.mockMode = false;
+
+        // Start Server (since we recovered)
+        server.listen(PORT, '0.0.0.0', () => {
+          console.log(`🚀 MediVerse Backend live on port ${PORT} (Recovered)`);
+          console.log(`ℹ️  Mode: LIVE (Database)`);
+        });
+        return; // Exit function, server is running
       } catch (fixErr) {
         console.error('❌ Auto-fix failed:', fixErr);
       }
@@ -116,7 +126,6 @@ const startServer = async () => {
 
     console.error('⚠️  CRITICAL: Database is required. Exiting...');
     console.error('--------------------------------------------------');
-    // Exit process to allow Railway to restart the container or show crash log
     process.exit(1);
   }
 
